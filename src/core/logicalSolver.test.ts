@@ -30,4 +30,5 @@ describe("logicalSolver", () => {
     const deduction = findNextDeduction(board, puzzle.regions, puzzle.gridSize);
     expect(deduction).toBeNull();
   });
+
 });

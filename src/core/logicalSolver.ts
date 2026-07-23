@@ -78,6 +78,34 @@ export function hasContradiction(board: BoardGrid, regions: RegionGrid, n: numbe
   return false;
 }
 
+/**
+ * Cells belonging to any not-yet-solved row/column/region that has zero
+ * remaining candidates - a dead-end state the board can still reach even
+ * with placement guarded (§4.2), e.g. by clearing a cat and leaving its
+ * old auto-X cascade in place. Used for live highlighting (§4.4) so a
+ * broken board is never silently unsolvable.
+ */
+export function contradictionCells(board: BoardGrid, regions: RegionGrid, n: number): Coord[] {
+  const groups = buildGroups(n, regions);
+  const seen = new Set<string>();
+  const cells: Coord[] = [];
+  for (const family of FAMILIES) {
+    for (let id = 0; id < n; id++) {
+      const groupCells = groups[family][id];
+      if (isGroupSolved(board, groupCells)) continue;
+      if (candidatesOf(board, groupCells).length > 0) continue;
+      for (const cell of groupCells) {
+        const key = `${cell.row},${cell.col}`;
+        if (!seen.has(key)) {
+          seen.add(key);
+          cells.push(cell);
+        }
+      }
+    }
+  }
+  return cells;
+}
+
 function* combinations(items: number[], k: number): Generator<number[]> {
   const n = items.length;
   if (k > n || k <= 0) return;

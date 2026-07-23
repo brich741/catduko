@@ -45,6 +45,39 @@ describe("GameState", () => {
     gs.stopTimer();
   });
 
+  it("double tap on a cell that isn't part of the solution is rejected", () => {
+    const gs = new GameState();
+    gs.startNewPuzzle("easy");
+    const solutionKeys = new Set(gs.puzzle!.solution.map((c) => `${c.row},${c.col}`));
+    const n = gs.puzzle!.gridSize;
+    let wrongRow = -1;
+    let wrongCol = -1;
+    outer: for (let r = 0; r < n; r++) {
+      for (let c = 0; c < n; c++) {
+        if (!solutionKeys.has(`${r},${c}`)) {
+          wrongRow = r;
+          wrongCol = c;
+          break outer;
+        }
+      }
+    }
+    expect(gs.isIllegalCatPlacement(wrongRow, wrongCol)).toBe(true);
+    gs.handleDoubleTap(wrongRow, wrongCol);
+    expect(gs.puzzle!.board[wrongRow][wrongCol]).toBe("empty");
+    expect(gs.moveCount).toBe(0);
+    gs.stopTimer();
+  });
+
+  it("double tap on a cell that is part of the solution places a cat", () => {
+    const gs = new GameState();
+    gs.startNewPuzzle("easy");
+    const { row, col } = gs.puzzle!.solution[0];
+    expect(gs.isIllegalCatPlacement(row, col)).toBe(false);
+    gs.handleDoubleTap(row, col);
+    expect(gs.puzzle!.board[row][col]).toBe("cat");
+    gs.stopTimer();
+  });
+
   it("double tap on a cat clears it back to empty", () => {
     const gs = new GameState();
     gs.startNewPuzzle("easy");

@@ -3,7 +3,7 @@ import type { CellChange, Move, PersistedPuzzle, Settings } from "./schema";
 import { loadState, saveState } from "./persistence";
 import { generatePuzzle } from "./puzzleGenerator";
 import { createEmptyBoard, findConflicts, isBoardComplete, neighbors8 } from "./boardOps";
-import { findNextDeduction, type Deduction } from "./logicalSolver";
+import { contradictionCells, findNextDeduction, type Deduction } from "./logicalSolver";
 import { todayDateString, isDayBefore } from "./dateUtils";
 
 export type Listener = () => void;
@@ -73,6 +73,24 @@ export class GameState {
     return findConflicts(cp.board, cp.regions, cp.gridSize);
   }
 
+  /** Cells in a row/column/region that's been left with no cat and no candidate left - a dead-end board state. */
+  get contradictions(): Coord[] {
+    const cp = this.state.currentPuzzle;
+    if (!cp) return [];
+    return contradictionCells(cp.board, cp.regions, cp.gridSize);
+  }
+
+  /** True if (row, col) can never legally hold a cat - it isn't one of the puzzle's predetermined solution cells. */
+  isIllegalCatPlacement(row: number, col: number): boolean {
+    const cp = this.state.currentPuzzle;
+    if (!cp || cp.board[row][col] === "cat") return false;
+    return !this.isSolutionCell(cp, row, col);
+  }
+
+  private isSolutionCell(cp: PersistedPuzzle, row: number, col: number): boolean {
+    return cp.solution.some((c) => c.row === row && c.col === col);
+  }
+
   // ---- puzzle lifecycle ----
 
   startNewPuzzle(difficulty: Difficulty): void {
@@ -114,6 +132,8 @@ export class GameState {
       this.applyMove(cp, { changes: [{ row, col, prev: "cat", next: "empty" }] });
       return;
     }
+
+    if (!this.isSolutionCell(cp, row, col)) return;
 
     const changes: CellChange[] = [{ row, col, prev: cur, next: "cat" }];
     if (this.state.settings.autoXAssistEnabled) {

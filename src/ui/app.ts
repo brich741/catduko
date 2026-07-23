@@ -31,6 +31,8 @@ export class App {
   private celebratedFor: number | null = null;
   private completionDismissed = false;
   private builtGridSize: number | null = null;
+  private invalidAttempt: { row: number; col: number } | null = null;
+  private invalidAttemptTimeout: ReturnType<typeof setTimeout> | null = null;
 
   constructor(private root: HTMLElement) {
     initTheme(() => this.gameState.settings.theme);
@@ -94,6 +96,8 @@ export class App {
     this.screen = "game";
     this.generating = true;
     this.generationError = null;
+    if (this.invalidAttemptTimeout) clearTimeout(this.invalidAttemptTimeout);
+    this.invalidAttempt = null;
     this.render();
 
     // Defer the (synchronous, CPU-bound) generation two frames so the
@@ -230,12 +234,27 @@ export class App {
   private handleDoubleTap(row: number, col: number): void {
     this.clearHint();
     const before = this.gameState.puzzle!.board[row][col];
+    if (before !== "cat" && this.gameState.isIllegalCatPlacement(row, col)) {
+      this.flashInvalidAttempt(row, col);
+      return;
+    }
     this.gameState.handleDoubleTap(row, col);
     const after = this.gameState.puzzle!.board[row][col];
     if (after === "cat" && before !== "cat") {
       if (this.gameState.settings.soundEnabled) playPlaceCat();
       if (this.gameState.settings.hapticsEnabled) vibrate(HAPTIC_CAT_PLACED);
     }
+  }
+
+  private flashInvalidAttempt(row: number, col: number): void {
+    if (this.invalidAttemptTimeout) clearTimeout(this.invalidAttemptTimeout);
+    this.invalidAttempt = { row, col };
+    this.render();
+    this.invalidAttemptTimeout = setTimeout(() => {
+      this.invalidAttempt = null;
+      this.invalidAttemptTimeout = null;
+      this.render();
+    }, 500);
   }
 
   private showHint(): void {
@@ -267,6 +286,8 @@ export class App {
     this.root.querySelector<HTMLButtonElement>("[data-action='redo']")!.disabled = !this.gameState.canRedo;
 
     const conflictKeys = new Set(this.gameState.conflicts.map((c) => `${c.row},${c.col}`));
+    for (const c of this.gameState.contradictions) conflictKeys.add(`${c.row},${c.col}`);
+    if (this.invalidAttempt) conflictKeys.add(`${this.invalidAttempt.row},${this.invalidAttempt.col}`);
     const hintKeys = new Set((this.hint?.highlight ?? []).map((c) => `${c.row},${c.col}`));
     this.boardView!.update(puzzle.board, conflictKeys, hintKeys);
     this.boardView!.updateColors(puzzle.regions, this.isDark());
