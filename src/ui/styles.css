@@ -13,7 +13,6 @@
   --hint-glow: rgba(63, 182, 168, 0.35);
   --border: #f0dbe2;
   --shadow: 0 6px 20px rgba(107, 39, 64, 0.08);
-  --x-color: #b8a4ab;
   --cat-color: #6b2740;
   --radius-sm: 8px;
   --radius-md: 14px;
@@ -34,7 +33,6 @@
   --hint-glow: rgba(79, 216, 196, 0.35);
   --border: #453a3f;
   --shadow: 0 6px 24px rgba(0, 0, 0, 0.35);
-  --x-color: #7c6b71;
   --cat-color: #ffe1ec;
 }
 
@@ -247,12 +245,13 @@ button {
   overflow: hidden;
 }
 .cell svg {
-  width: 62%;
-  height: 62%;
+  width: 84%;
+  height: 84%;
   pointer-events: none;
 }
 .cell .cat-icon {
   fill: var(--cat-color);
+  stroke: var(--cat-color);
   transform: scale(0.6);
   opacity: 0;
 }
@@ -265,9 +264,11 @@ button {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--x-color);
-  font-size: 1.4rem;
-  font-weight: 300;
+  color: #ffffff;
+  font-size: 2.4rem;
+  font-weight: 800;
+  -webkit-text-stroke: 1.5px #ffffff;
+  text-shadow: 0 2px 5px rgba(0, 0, 0, 0.4), 0 0 3px rgba(0, 0, 0, 0.3);
   opacity: 0;
   transition: opacity 0.15s ease;
 }
