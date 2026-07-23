@@ -116,20 +116,22 @@ export class GameState {
     }
 
     const changes: CellChange[] = [{ row, col, prev: cur, next: "cat" }];
-    const regionId = cp.regions[row][col];
-    const mark = (rr: number, cc: number) => {
-      if (rr === row && cc === col) return;
-      const prev = cp.board[rr][cc];
-      if (prev !== "cat" && prev !== "x") changes.push({ row: rr, col: cc, prev, next: "x" });
-    };
-    for (let c = 0; c < cp.gridSize; c++) mark(row, c);
-    for (let r = 0; r < cp.gridSize; r++) mark(r, col);
-    for (let r = 0; r < cp.gridSize; r++) {
-      for (let c = 0; c < cp.gridSize; c++) {
-        if (cp.regions[r][c] === regionId) mark(r, c);
+    if (this.state.settings.autoXAssistEnabled) {
+      const regionId = cp.regions[row][col];
+      const mark = (rr: number, cc: number) => {
+        if (rr === row && cc === col) return;
+        const prev = cp.board[rr][cc];
+        if (prev !== "cat" && prev !== "x") changes.push({ row: rr, col: cc, prev, next: "x" });
+      };
+      for (let c = 0; c < cp.gridSize; c++) mark(row, c);
+      for (let r = 0; r < cp.gridSize; r++) mark(r, col);
+      for (let r = 0; r < cp.gridSize; r++) {
+        for (let c = 0; c < cp.gridSize; c++) {
+          if (cp.regions[r][c] === regionId) mark(r, c);
+        }
       }
+      for (const nb of neighbors8(cp.gridSize, row, col)) mark(nb.row, nb.col);
     }
-    for (const nb of neighbors8(cp.gridSize, row, col)) mark(nb.row, nb.col);
 
     this.applyMove(cp, { changes });
   }

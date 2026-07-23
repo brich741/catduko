@@ -42,6 +42,7 @@ export interface Settings {
   theme: "system" | "light" | "dark";
   soundEnabled: boolean;
   hapticsEnabled: boolean;
+  autoXAssistEnabled: boolean;
 }
 
 export interface PersistedState {
@@ -69,7 +70,7 @@ export function createDefaultStats(): Stats {
 }
 
 export function createDefaultSettings(): Settings {
-  return { theme: "system", soundEnabled: true, hapticsEnabled: true };
+  return { theme: "system", soundEnabled: true, hapticsEnabled: true, autoXAssistEnabled: true };
 }
 
 export function createDefaultPersistedState(): PersistedState {

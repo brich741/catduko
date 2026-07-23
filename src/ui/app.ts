@@ -377,6 +377,10 @@ export class App {
             <span class="row-label">Haptic feedback</span>
             <button class="switch ${settings.hapticsEnabled ? "on" : ""}" data-action="toggle-haptics" aria-label="Toggle haptics"></button>
           </div>
+          <div class="settings-row">
+            <span class="row-label">Auto-X assist</span>
+            <button class="switch ${settings.autoXAssistEnabled ? "on" : ""}" data-action="toggle-auto-x" aria-label="Toggle auto-X assist"></button>
+          </div>
         </div>
 
         <div class="streak-banner">
@@ -425,6 +429,9 @@ export class App {
     });
     this.root.querySelector("[data-action='toggle-haptics']")!.addEventListener("click", () => {
       this.gameState.updateSettings({ hapticsEnabled: !settings.hapticsEnabled });
+    });
+    this.root.querySelector("[data-action='toggle-auto-x']")!.addEventListener("click", () => {
+      this.gameState.updateSettings({ autoXAssistEnabled: !settings.autoXAssistEnabled });
     });
   }
 }

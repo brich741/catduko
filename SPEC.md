@@ -80,7 +80,7 @@ Each cell is in one of three states: **empty**, **X** (marked as "no cat here"),
 - Placing a cat does **not** require first clearing an existing X — double-tap always works directly.
 
 ### 4.3 Auto-X assist
-When a cat is placed, automatically mark X on every cell that placement eliminates: the rest of its row, column, and color region, plus all 8 surrounding neighbor cells — skipping any cell that's already a cat (shouldn't happen in a legal state) and simply overwriting existing X/empty marks. This is a pure convenience layer; it never places cats automatically, only X's.
+When a cat is placed, automatically mark X on every cell that placement eliminates: the rest of its row, column, and color region, plus all 8 surrounding neighbor cells — skipping any cell that's already a cat (shouldn't happen in a legal state) and simply overwriting existing X/empty marks. This is a pure convenience layer; it never places cats automatically, only X's. Toggleable in Settings (§7), on by default; when off, placing a cat only places the cat.
 
 ### 4.4 Live rule-violation highlighting
 The board is checked continuously (not blocking input). If the current set of placed cats violates a rule — two cats share a row/column/region, or two cats are touching (including diagonally) — the offending cats are highlighted (e.g. a red pulse/outline) until the conflict is resolved. Placement is never blocked; this is purely informational.
@@ -150,7 +150,8 @@ catduko:v1 {
   settings: {
     theme: "system" | "light" | "dark",
     soundEnabled: boolean,
-    hapticsEnabled: boolean
+    hapticsEnabled: boolean,
+    autoXAssistEnabled: boolean
   }
 }
 ```
@@ -167,6 +168,7 @@ catduko:v1 {
 - Theme: System / Light / Dark.
 - Sound effects: on/off.
 - Haptic feedback: on/off.
+- Auto-X assist (§4.3): on/off. When off, placing a cat only places the cat — no automatic X's on the eliminated row/column/region/neighbors.
 - Stats view: completed count, best/average time, and current streak per difficulty.
 - (No accounts, no cloud sync, no ads, no in-app purchases — none of that is in scope.)
 
