@@ -23,3 +23,44 @@ export const CAT_ICON_SVG = `
     <path d="M94 68 L76 67" />
   </g>
 </svg>`.trim();
+
+type RuleKind = "region" | "rowcol" | "touch";
+
+const RULES: Array<{ kind: RuleKind; text: string }> = [
+  { kind: "region", text: "1 Cat per color" },
+  { kind: "rowcol", text: "1 Cat per column &amp; row" },
+  { kind: "touch", text: "Cats cannot touch" },
+];
+
+function miniCell(filled: boolean, marker: "" | "x" | "cat"): string {
+  const classes = ["mini-cell"];
+  if (filled) classes.push("fill");
+  if (marker === "cat") classes.push("cat");
+  const content = marker === "cat" ? "🐱" : marker === "x" ? "✕" : "";
+  return `<span class="${classes.join(" ")}">${content}</span>`;
+}
+
+/** 3x3 diagram illustrating one placement rule, echoing the real board's color-fill/X/cat visual language. */
+function miniGrid(kind: RuleKind): string {
+  const cells: string[] = [];
+  for (let i = 0; i < 9; i++) {
+    const r = Math.floor(i / 3);
+    const c = i % 3;
+    const isCenter = i === 4;
+    if (kind === "region") {
+      cells.push(miniCell(true, isCenter ? "cat" : "x"));
+    } else if (kind === "rowcol") {
+      const inCross = r === 1 || c === 1;
+      cells.push(miniCell(inCross, isCenter ? "cat" : inCross ? "x" : ""));
+    } else {
+      cells.push(miniCell(false, isCenter ? "cat" : "x"));
+    }
+  }
+  return `<div class="rule-icon">${cells.join("")}</div>`;
+}
+
+export function ruleLegendHTML(): string {
+  return `<div class="rules-row">${RULES.map(
+    (r) => `<div class="rule-card">${miniGrid(r.kind)}<span class="rule-text">${r.text}</span></div>`
+  ).join("")}</div>`;
+}

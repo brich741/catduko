@@ -8,6 +8,7 @@ import { playComplete, playMarkX, playPlaceCat } from "./sound";
 import { HAPTIC_CAT_PLACED, HAPTIC_COMPLETE, vibrate } from "./haptics";
 import { burstConfetti } from "./confetti";
 import { DIFFICULTY_LABEL, DIFFICULTY_SUBTITLE, formatAverage, formatTime } from "./format";
+import { ruleLegendHTML } from "./icons";
 
 type Screen = "start" | "game" | "settings";
 
@@ -180,14 +181,18 @@ export class App {
     this.root.innerHTML = `
       <div class="screen game-screen">
         <div class="top-bar">
-          <span class="app-title">🐾 CatDuko</span>
+          <button class="btn btn-icon" data-action="back" aria-label="Back">←</button>
+          <div class="stats-row">
+            <div class="stat-block"><span class="stat-label">Time</span><span class="stat-value" data-el="timer">00:00</span></div>
+            <div class="stat-block"><span class="stat-label">Moves</span><span class="stat-value" data-el="moves">0</span></div>
+          </div>
           <button class="btn btn-icon" data-action="settings" aria-label="Settings">⚙️</button>
         </div>
         <div class="difficulty-badge" data-el="difficulty"></div>
-        <div class="stat-row">
-          <div class="stat-chip">⏱ <span data-el="timer">00:00</span></div>
-          <div class="stat-chip">✋ <span data-el="moves">0</span> moves</div>
+        <div class="cat-progress-row">
+          <div class="cat-progress-pill">🐱 <span data-el="cat-progress">0/0</span></div>
         </div>
+        ${ruleLegendHTML()}
         <div class="board-wrap"><div class="board"></div></div>
         <div data-el="hint-slot"></div>
         <div class="action-row">
@@ -199,6 +204,7 @@ export class App {
       </div>
     `;
 
+    this.root.querySelector("[data-action='back']")!.addEventListener("click", () => this.goToDifficultyPicker());
     this.root.querySelector("[data-action='settings']")!.addEventListener("click", () => {
       this.screen = "settings";
       this.render();
@@ -281,6 +287,9 @@ export class App {
     this.root.querySelector(
       "[data-el='difficulty']"
     )!.textContent = `${DIFFICULTY_LABEL[puzzle.difficulty]} · ${puzzle.gridSize}×${puzzle.gridSize}`;
+
+    const catsPlaced = puzzle.board.reduce((n, row) => n + row.filter((s) => s === "cat").length, 0);
+    this.root.querySelector("[data-el='cat-progress']")!.textContent = `${catsPlaced}/${puzzle.gridSize}`;
 
     this.root.querySelector<HTMLButtonElement>("[data-action='undo']")!.disabled = !this.gameState.canUndo;
     this.root.querySelector<HTMLButtonElement>("[data-action='redo']")!.disabled = !this.gameState.canRedo;
