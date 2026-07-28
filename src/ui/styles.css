@@ -333,16 +333,27 @@ button {
 .cell .x-mark {
   position: absolute;
   inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #ffffff;
-  font-size: 2.4rem;
-  font-weight: 800;
-  -webkit-text-stroke: 1.5px #ffffff;
-  text-shadow: 0 2px 5px rgba(0, 0, 0, 0.4), 0 0 3px rgba(0, 0, 0, 0.3);
   opacity: 0;
   transition: opacity 0.15s ease;
+  pointer-events: none;
+}
+.cell .x-mark::before,
+.cell .x-mark::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 78%;
+  height: 5px;
+  background: #ffffff;
+  border-radius: 2px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.4), 0 0 3px rgba(0, 0, 0, 0.3);
+}
+.cell .x-mark::before {
+  transform: translate(-50%, -50%) rotate(45deg);
+}
+.cell .x-mark::after {
+  transform: translate(-50%, -50%) rotate(-45deg);
 }
 .cell.has-x .x-mark {
   opacity: 1;

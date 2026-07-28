@@ -37,7 +37,7 @@ export class BoardView {
         btn.className = "cell";
         btn.setAttribute("aria-label", `Row ${r + 1}, column ${c + 1}`);
         btn.style.background = (isDark ? regionColorDark : regionColorLight)(regions[r][c]);
-        btn.innerHTML = `${CAT_ICON_SVG}<span class="x-mark">✕</span>`;
+        btn.innerHTML = `${CAT_ICON_SVG}<span class="x-mark"></span>`;
         btn.addEventListener("pointerup", (e) => {
           e.preventDefault();
           this.handleTapAt(r, c);
