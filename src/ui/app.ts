@@ -13,7 +13,9 @@ import { ruleLegendHTML } from "./icons";
 type Screen = "start" | "game" | "settings";
 
 interface ConfirmState {
+  title: string;
   message: string;
+  confirmLabel: string;
   onConfirm: () => void;
 }
 
@@ -79,7 +81,9 @@ export class App {
     const puzzle = this.gameState.puzzle;
     if (puzzle && !puzzle.completed) {
       this.confirmDialog = {
+        title: "New puzzle?",
         message: "Discard current progress and start a new puzzle?",
+        confirmLabel: "Discard",
         onConfirm: () => {
           this.confirmDialog = null;
           this.screen = "start";
@@ -91,6 +95,24 @@ export class App {
       this.screen = "start";
       this.render();
     }
+  }
+
+  private confirmReset(): void {
+    if (!this.gameState.puzzle) return;
+    this.confirmDialog = {
+      title: "Reset puzzle?",
+      message: "Clear all your marks and cats and start this puzzle over from scratch?",
+      confirmLabel: "Reset",
+      onConfirm: () => {
+        this.confirmDialog = null;
+        this.clearHint();
+        this.completionDismissed = false;
+        this.celebratedFor = null;
+        this.gameState.resetPuzzle();
+        this.render();
+      },
+    };
+    this.render();
   }
 
   private beginGeneration(difficulty: Difficulty): void {
@@ -199,6 +221,7 @@ export class App {
           <button class="btn btn-icon" data-action="undo" aria-label="Undo">↩️</button>
           <button class="btn btn-icon" data-action="redo" aria-label="Redo">↪️</button>
           <button class="btn btn-primary" data-action="hint">Hint</button>
+          <button class="btn" data-action="reset">Reset</button>
           <button class="btn" data-action="new">New Puzzle</button>
         </div>
       </div>
@@ -218,6 +241,7 @@ export class App {
       this.gameState.redo();
     });
     this.root.querySelector("[data-action='hint']")!.addEventListener("click", () => this.showHint());
+    this.root.querySelector("[data-action='reset']")!.addEventListener("click", () => this.confirmReset());
     this.root.querySelector("[data-action='new']")!.addEventListener("click", () => this.goToDifficultyPicker());
 
     const boardContainer = this.root.querySelector<HTMLElement>(".board")!;
@@ -329,11 +353,11 @@ export class App {
       overlay.className = "overlay";
       overlay.innerHTML = `
         <div class="dialog">
-          <h3>New puzzle?</h3>
+          <h3>${this.confirmDialog.title}</h3>
           <p>${this.confirmDialog.message}</p>
           <div class="dialog-actions">
             <button class="btn" data-action="cancel">Cancel</button>
-            <button class="btn btn-primary" data-action="confirm">Discard</button>
+            <button class="btn btn-primary" data-action="confirm">${this.confirmDialog.confirmLabel}</button>
           </div>
         </div>`;
       overlay.querySelector("[data-action='cancel']")!.addEventListener("click", () => {

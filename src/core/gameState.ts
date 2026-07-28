@@ -112,6 +112,21 @@ export class GameState {
     this.startTimer();
   }
 
+  /** Clears all marks/cats and restarts the timer, keeping the same regions/solution. */
+  resetPuzzle(): void {
+    const cp = this.state.currentPuzzle;
+    if (!cp) return;
+    this.stopTimer();
+    cp.board = createEmptyBoard(cp.gridSize);
+    cp.moveHistory = [];
+    cp.historyIndex = 0;
+    cp.elapsedSeconds = 0;
+    cp.startedAt = Date.now();
+    cp.completed = false;
+    this.commit();
+    this.startTimer();
+  }
+
   // ---- input handling (§4.2) ----
 
   handleTap(row: number, col: number): void {
