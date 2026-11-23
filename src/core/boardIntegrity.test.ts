@@ -24,7 +24,7 @@ function mulberry32(seed: number) {
  * leaving the player looking at a silently-impossible board.
  */
 describe("board integrity under random legal play", () => {
-  const difficulties: Difficulty[] = ["easy", "medium", "hard", "expert"];
+  const difficulties: Difficulty[] = ["easy", "medium", "hard", "expert", "master"];
 
   for (const difficulty of difficulties) {
     it(`${difficulty}: placing never contradicts; any contradiction is always surfaced`, () => {

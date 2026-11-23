@@ -4,7 +4,7 @@ import { hasUniqueSolution } from "./uniquenessSolver";
 import { solvePuzzle } from "./logicalSolver";
 import { DIFFICULTY_TIER, type Difficulty } from "./types";
 
-const DIFFICULTIES: Difficulty[] = ["easy", "medium", "hard", "expert"];
+const DIFFICULTIES: Difficulty[] = ["easy", "medium", "hard", "expert", "master"];
 
 describe("generatePuzzle", () => {
   it.each(DIFFICULTIES)("generates a valid, unique, pure-logic-solvable %s puzzle", (difficulty) => {
@@ -15,7 +15,14 @@ describe("generatePuzzle", () => {
 
     const result = solvePuzzle(puzzle.regions, puzzle.gridSize);
     expect(result.solved).toBe(true);
-    expect(result.maxTier).toBe(DIFFICULTY_TIER[difficulty]);
+    if (difficulty === "easy") expect(result.maxTier).toBeLessThanOrEqual(2);
+    else if (difficulty === "master") expect(result.maxTier).toBeGreaterThanOrEqual(2);
+    else expect(result.maxTier).toBe(DIFFICULTY_TIER[difficulty]);
+
+    // no region may be a single square
+    const sizes = new Array<number>(puzzle.gridSize).fill(0);
+    for (const row of puzzle.regions) for (const id of row) sizes[id]++;
+    expect(Math.min(...sizes)).toBeGreaterThanOrEqual(2);
 
     // the solver's found solution must match the planted one (uniqueness
     // guarantees there's only one to find)

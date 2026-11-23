@@ -19,7 +19,7 @@ interface ConfirmState {
   onConfirm: () => void;
 }
 
-const DIFFICULTIES: Difficulty[] = ["easy", "medium", "hard", "expert"];
+const DIFFICULTIES: Difficulty[] = ["easy", "medium", "hard", "expert", "master"];
 const THEMES: Settings["theme"][] = ["system", "light", "dark"];
 
 export class App {

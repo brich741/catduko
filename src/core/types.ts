@@ -1,4 +1,4 @@
-export type Difficulty = "easy" | "medium" | "hard" | "expert";
+export type Difficulty = "easy" | "medium" | "hard" | "expert" | "master";
 
 export type CellState = "empty" | "x" | "cat";
 
@@ -26,6 +26,7 @@ export const DIFFICULTY_TIER: Record<Difficulty, number> = {
   medium: 2,
   hard: 3,
   expert: 4,
+  master: 4,
 };
 
 export const DIFFICULTY_GRID_SIZES: Record<Difficulty, number[]> = {
@@ -33,4 +34,5 @@ export const DIFFICULTY_GRID_SIZES: Record<Difficulty, number[]> = {
   medium: [6, 7],
   hard: [8],
   expert: [9, 10],
+  master: [12],
 };

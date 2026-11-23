@@ -35,6 +35,19 @@ export function growRegions(n: number, solution: Coord[], rng: () => number = Ma
     regions[seed.row][seed.col] = id;
   });
 
+  // Give every region a second cell up front so none can end up as a lone square.
+  let claimed = 0;
+  for (const id of shuffled(solution.map((_, i) => i), rng)) {
+    const seed = solution[id];
+    const free = shuffled(ORTHO, rng)
+      .map(({ dr, dc }) => ({ row: seed.row + dr, col: seed.col + dc }))
+      .filter((p) => inBounds(n, p.row, p.col) && regions[p.row][p.col] === -1);
+    if (free.length > 0) {
+      regions[free[0].row][free[0].col] = id;
+      claimed++;
+    }
+  }
+
   let frontier: FrontierEntry[] = [];
   const pushFrontier = (id: number, r: number, c: number) => {
     for (const { dr, dc } of ORTHO) {
@@ -43,9 +56,16 @@ export function growRegions(n: number, solution: Coord[], rng: () => number = Ma
       if (inBounds(n, nr, nc) && regions[nr][nc] === -1) frontier.push({ id, row: nr, col: nc });
     }
   };
-  solution.forEach((seed, id) => pushFrontier(id, seed.row, seed.col));
+  for (let r = 0; r < n; r++) {
+    for (let c = 0; c < n; c++) if (regions[r][c] !== -1) pushFrontier(regions[r][c], r, c);
+  }
 
-  let unassigned = n * n - n;
+  // Large grids: give each region a random growth appetite so sizes end up
+  // very uneven. Near-uniform partitions on 11x11+ are almost never uniquely
+  // solvable; skewed ones are far more often.
+  const weights = n >= 11 ? solution.map(() => 0.05 + rng() ** 4 * 8) : null;
+
+  let unassigned = n * n - n - claimed;
   let guard = 0;
   const guardLimit = n * n * 50;
 
@@ -61,7 +81,7 @@ export function growRegions(n: number, solution: Coord[], rng: () => number = Ma
       }
       continue;
     }
-    const idx = Math.floor(rng() * frontier.length);
+    const idx = pickFrontierIndex(frontier, weights, rng);
     const entry = frontier[idx];
     frontier.splice(idx, 1);
     if (regions[entry.row][entry.col] !== -1) continue; // stale, already claimed
@@ -71,6 +91,18 @@ export function growRegions(n: number, solution: Coord[], rng: () => number = Ma
   }
 
   return regions;
+}
+
+function pickFrontierIndex(frontier: FrontierEntry[], weights: number[] | null, rng: () => number): number {
+  if (!weights) return Math.floor(rng() * frontier.length);
+  let total = 0;
+  for (const e of frontier) total += weights[e.id];
+  let x = rng() * total;
+  for (let i = 0; i < frontier.length; i++) {
+    x -= weights[frontier[i].id];
+    if (x <= 0) return i;
+  }
+  return frontier.length - 1;
 }
 
 function countUnassigned(regions: RegionGrid, n: number): number {

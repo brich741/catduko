@@ -62,6 +62,7 @@ export function createDefaultStats(): Stats {
       medium: emptyDifficultyStats(),
       hard: emptyDifficultyStats(),
       expert: emptyDifficultyStats(),
+      master: emptyDifficultyStats(),
     },
     totalCompleted: 0,
     currentStreakDays: 0,

@@ -16,7 +16,11 @@ export function loadState(): PersistedState {
     const parsed = JSON.parse(raw) as Partial<PersistedState>;
     return {
       currentPuzzle: parsed.currentPuzzle ?? null,
-      stats: { ...createDefaultStats(), ...parsed.stats },
+      stats: {
+        ...createDefaultStats(),
+        ...parsed.stats,
+        perDifficulty: { ...createDefaultStats().perDifficulty, ...parsed.stats?.perDifficulty },
+      },
       settings: { ...createDefaultSettings(), ...parsed.settings },
     };
   } catch {

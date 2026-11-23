@@ -14,6 +14,7 @@ export const DIFFICULTY_LABEL: Record<string, string> = {
   medium: "Medium",
   hard: "Hard",
   expert: "Expert",
+  master: "Master",
 };
 
 export const DIFFICULTY_SUBTITLE: Record<string, string> = {
@@ -21,4 +22,5 @@ export const DIFFICULTY_SUBTITLE: Record<string, string> = {
   medium: "6×6–7×7 grid",
   hard: "8×8 grid",
   expert: "9×9–10×10 grid",
+  master: "12×12 grid",
 };

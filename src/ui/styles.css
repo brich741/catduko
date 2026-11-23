@@ -669,3 +669,6 @@ button {
   box-shadow: var(--shadow);
   z-index: 40;
 }
+.difficulty-card:last-child:nth-child(odd) {
+  grid-column: 1 / -1;
+}
