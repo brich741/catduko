@@ -194,3 +194,90 @@ export function repairForUniqueness(
 
   return findSolutions(regions, n, 2).length === 1;
 }
+
+/**
+ * Evens out region sizes on an already-unique puzzle: repeatedly moves a
+ * non-seed boundary square from a large region into a smaller neighboring
+ * region, keeping the move only if every region stays contiguous (2+ squares)
+ * and the puzzle stays uniquely solvable. Stops when the largest region is at
+ * most `maxSize`. Mutates `regions` in place; returns whether the target was hit.
+ */
+export function rebalanceRegions(
+  n: number,
+  regions: RegionGrid,
+  plantedSolution: Coord[],
+  rng: () => number,
+  maxSize: number,
+  steps = 4000
+): boolean {
+  const seedKeys = new Set(plantedSolution.map((c) => `${c.row},${c.col}`));
+  const sizes = new Array<number>(n).fill(0);
+  for (const row of regions) for (const id of row) sizes[id]++;
+
+  for (let step = 0; step < steps; step++) {
+    let big = 0;
+    for (let i = 1; i < n; i++) if (sizes[i] > sizes[big]) big = i;
+    if (sizes[big] <= maxSize) return true;
+
+    // pick a random boundary square of a region bigger than the target
+    const row = Math.floor(rng() * n);
+    const col = Math.floor(rng() * n);
+    const cur = regions[row][col];
+    if (sizes[cur] <= maxSize || seedKeys.has(`${row},${col}`)) continue;
+    const options = Array.from(
+      new Set(orthoNeighbors(n, { row, col }).map((nb) => regions[nb.row][nb.col]).filter((r) => r !== cur))
+    ).filter((r) => sizes[r] + 1 < sizes[cur]);
+    if (options.length === 0) continue;
+    const next = options[Math.floor(rng() * options.length)];
+
+    regions[row][col] = next;
+    if (isRegionContiguous(n, regions, cur) && findSolutions(regions, n, 2).length === 1) {
+      sizes[cur]--;
+      sizes[next]++;
+    } else {
+      regions[row][col] = cur;
+    }
+  }
+  return false;
+}
+
+/**
+ * Random-walks a uniquely solvable partition: each step moves a non-seed
+ * boundary square to a neighboring region, keeping contiguity, 2..maxSize
+ * squares per region and uniqueness. Used to shuffle the layout looking for
+ * one the logical solver can finish. Mutates `regions`; returns moves made.
+ */
+export function wanderUnique(
+  n: number,
+  regions: RegionGrid,
+  plantedSolution: Coord[],
+  rng: () => number,
+  maxSize: number,
+  tries: number
+): number {
+  const seedKeys = new Set(plantedSolution.map((c) => `${c.row},${c.col}`));
+  const sizes = new Array<number>(n).fill(0);
+  for (const row of regions) for (const id of row) sizes[id]++;
+  let moves = 0;
+  for (let i = 0; i < tries; i++) {
+    const row = Math.floor(rng() * n);
+    const col = Math.floor(rng() * n);
+    if (seedKeys.has(`${row},${col}`)) continue;
+    const cur = regions[row][col];
+    if (sizes[cur] <= 2) continue;
+    const options = Array.from(
+      new Set(orthoNeighbors(n, { row, col }).map((nb) => regions[nb.row][nb.col]).filter((r) => r !== cur))
+    ).filter((r) => sizes[r] < maxSize);
+    if (options.length === 0) continue;
+    const next = options[Math.floor(rng() * options.length)];
+    regions[row][col] = next;
+    if (isRegionContiguous(n, regions, cur) && findSolutions(regions, n, 2).length === 1) {
+      sizes[cur]--;
+      sizes[next]++;
+      moves++;
+    } else {
+      regions[row][col] = cur;
+    }
+  }
+  return moves;
+}

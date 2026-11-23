@@ -1,12 +1,17 @@
 import type { Difficulty, Puzzle } from "./types";
 import { DIFFICULTY_GRID_SIZES, DIFFICULTY_TIER } from "./types";
 import { generateRandomSolution } from "./solutionGenerator";
-import { growRegions, repairForUniqueness } from "./regionGrower";
+import { growRegions, rebalanceRegions, repairForUniqueness, wanderUnique } from "./regionGrower";
 import { hasUniqueSolution } from "./uniquenessSolver";
 import { solvePuzzle } from "./logicalSolver";
 import { pickRandom } from "./random";
 
-const GENERATION_BUDGET_MS = 10_000;
+const GENERATION_BUDGET_MS = 15_000;
+
+/** Grids this big can't use random balanced growth (almost never unique), so sizes are evened out afterwards. */
+const LARGE_GRID = 11;
+/** Largest allowed region on large grids: 3x the average region size. */
+const maxRegionSizeFor = (n: number) => 3 * n;
 
 export class PuzzleGenerationTimeoutError extends Error {
   constructor(difficulty: Difficulty, attempts: number) {
@@ -41,8 +46,20 @@ export function generatePuzzle(difficulty: Difficulty, rng: () => number = Math.
 
     if (hasSingleCellRegion(regions, gridSize)) continue;
 
-    const result = solvePuzzle(regions, gridSize);
+    let result = solvePuzzle(regions, gridSize);
+    if (gridSize >= LARGE_GRID) {
+      // Even out region sizes while staying unique, then wander across
+      // equivalent layouts until the logical solver can finish one.
+      const cap = maxRegionSizeFor(gridSize);
+      if (!rebalanceRegions(gridSize, regions, solution, rng, cap)) continue;
+      result = solvePuzzle(regions, gridSize);
+      for (let k = 0; k < 25 && !(result.solved && result.maxTier >= 2); k++) {
+        wanderUnique(gridSize, regions, solution, rng, cap, 40);
+        result = solvePuzzle(regions, gridSize);
+      }
+    }
     if (!result.solved) continue;
+
     // With no 1-cell regions nothing is solvable from an empty board by tier-1
     // alone, so easy accepts tier 1-2. Tier-3/4 12x12 grids are very rare,
     // so master accepts tier 2+ (the 12x12 size carries the difficulty). Other difficulties need an exact match.

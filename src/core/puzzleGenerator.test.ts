@@ -23,6 +23,8 @@ describe("generatePuzzle", () => {
     const sizes = new Array<number>(puzzle.gridSize).fill(0);
     for (const row of puzzle.regions) for (const id of row) sizes[id]++;
     expect(Math.min(...sizes)).toBeGreaterThanOrEqual(2);
+    // and no single color may dominate the board on large grids
+    if (puzzle.gridSize >= 11) expect(Math.max(...sizes)).toBeLessThanOrEqual(3 * puzzle.gridSize);
 
     // the solver's found solution must match the planted one (uniqueness
     // guarantees there's only one to find)
@@ -31,5 +33,5 @@ describe("generatePuzzle", () => {
     );
     const plantedCats = new Set(puzzle.solution.map((c) => `${c.row},${c.col}`));
     expect(solvedCats).toEqual(plantedCats);
-  }, 20_000);
+  }, 30_000);
 });
